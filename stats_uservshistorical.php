@@ -166,18 +166,18 @@ $r4 = $res[3];
 
 
 $dispArray['User'] = $userCount;
-$dispArray['Hist'] = [
+$dispArray['Hist'] = array(
     round($r1['Mean']),
     round($r2['Mean']),
     round($r3['Mean']),
     round($r4['Mean'])
-    ];
-$dispArray['CI'] = [
-    [ max(0,round($r1['Mean'] - $r1['StDev']*$sig)), round($r1['Mean'] + $r1['StDev']*$sig) ],
-    [ max(0,round($r2['Mean'] - $r2['StDev']*$sig)), round($r2['Mean'] + $r2['StDev']*$sig) ],
-    [ max(0,round($r3['Mean'] - $r3['StDev']*$sig)), round($r3['Mean'] + $r3['StDev']*$sig) ],
-    [ max(0,round($r4['Mean'] - $r4['StDev']*$sig)), round($r4['Mean'] + $r4['StDev']*$sig) ]
-    ];
+    );
+$dispArray['CI'] = array(
+    array(max(0,round($r1['Mean'] - $r1['StDev']*$sig)), round($r1['Mean'] + $r1['StDev']*$sig) ),
+    array(max(0,round($r2['Mean'] - $r2['StDev']*$sig)), round($r2['Mean'] + $r2['StDev']*$sig) ),
+    array(max(0,round($r3['Mean'] - $r3['StDev']*$sig)), round($r3['Mean'] + $r3['StDev']*$sig) ),
+    array(max(0,round($r4['Mean'] - $r4['StDev']*$sig)), round($r4['Mean'] + $r4['StDev']*$sig) )
+    );
 
 assembleYouVSHistoricalGraph($mod, $sec, 'usrHist', 'column', $dispArray);  // Part of this file
 tableStartSection("Historical Comparison",1);
