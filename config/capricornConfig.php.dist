@@ -109,7 +109,6 @@ $excludeBrowse []= "MISC";
 $excludedRotations = array();
 $excludedRotations []= "/VA/";
 
-
 // Resident Productivity Goal
 // This value is used in stats_classcomparison.php
 
