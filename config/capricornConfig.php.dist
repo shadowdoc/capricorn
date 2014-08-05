@@ -105,4 +105,9 @@ $excludeBrowse []= "MISC";
 $excludedRotations = array();
 $excludedRotations []= "/VA/";
 
+// This sets the default type and Section to display under statistics.php
+$statisticsDefault['Type'] = 'CHEST';
+$statisticsDefault['Section'] = 'CR';
+$statisticsDefault['Notes'] = '';
+
 ?>
