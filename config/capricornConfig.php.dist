@@ -106,6 +106,7 @@ $excludedRotations = array();
 $excludedRotations []= "/VA/";
 
 // This sets the default type and Section to display under statistics.php
+$statisticsDefault = array();
 $statisticsDefault['Type'] = 'CHEST';
 $statisticsDefault['Section'] = 'CR';
 $statisticsDefault['Notes'] = '';
