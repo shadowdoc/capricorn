@@ -48,8 +48,8 @@ UNLOCK TABLES;
 CREATE TABLE IF NOT EXISTS `ExamMeta` (
   `InternalID` varchar(30) NOT NULL,
   `AccessionNumber` varchar(16) DEFAULT NULL,
-  `LastName` varchar(25) NOT NULL,
-  `FirstName` varchar(25) NOT NULL,
+  `LastName` varchar(32) NOT NULL,
+  `FirstName` varchar(32) NOT NULL,
   `PatientID` varchar(50) NOT NULL,
   `ExamCode` varchar(16) DEFAULT NULL,
   `TraineeID` int(11) DEFAULT NULL,
@@ -128,6 +128,7 @@ INSERT INTO `ResidentIDDefinition` VALUES (1,'Ferris','D','Bueller','Y','2013-07
 UNLOCK TABLES;
 
 CREATE TABLE IF NOT EXISTS `ResidentRotation` (
+  `ID` int(11) NOT NULL KEY AUTO_INCREMENT,
   `TraineeID` int(11) NOT NULL,
   `Rotation` varchar(25) NOT NULL,
   `RotationStartDate` date NOT NULL,
