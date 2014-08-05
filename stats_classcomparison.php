@@ -60,6 +60,7 @@ function echoYouVSClassGraphJS($data) {
     $id = 1;
     $graph_data = array();
     foreach ($data as $key => $value) {
+
         if ($key == $_SESSION['traineeid']) {            
             $graph_data['You'] = $value;
         } else {
