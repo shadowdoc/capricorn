@@ -60,6 +60,7 @@ function echoYouVSClassGraphJS($data) {
     $id = 1;
     $graph_data = array();
     foreach ($data as $key => $value) {
+
         if ($key == $_SESSION['traineeid']) {            
             $graph_data['You'] = $value;
         } else {
@@ -181,7 +182,7 @@ END;
 // '' = all notes
 // startDate = thisJulyFirst()
 
-$data = getOverallCountArray(getLoginUserPGY(), '%', '%', '', thisJulyFirst()->format('Y-m-d'), nextJuneThirty()->format('Y-m-d'));
+$data = getOverallCountArray(getLoginUserPGY() - 1, '%', '%', '', thisJulyFirst()->format('Y-m-d'), nextJuneThirty()->format('Y-m-d'));
 
 echoYouVSClassGraphJS($data);
 makeDIV('projected', '750px', '400px');  // part of CapicornLib
