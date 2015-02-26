@@ -138,7 +138,7 @@ foreach ($rotations as $r) {
 ?>
 <div  data-intro="Click on a rotation to display its data." data-position="bottom">
 <?php
-echo "<h3>Display by Date<img src='images/new.png' width =55px alt=''/></h3>";
+
 tableStartSection("Date Ranges",0);
 echo '  <a href="#" onclick="clickInterval(-31)">1 month</a><br>
         <a href="#" onclick="clickInterval(-183)">6 months</a><br>
