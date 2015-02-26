@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `ExamCodeDefinition` (
   `Section` varchar(6) DEFAULT NOT NULL,
   `Type` varchar(6) DEFAULT NOT NULL,
   `Notes` varchar(16) DEFAULT NOT NULL,
+  'RVU' decimal(8,3) DEFAULT 0,
   PRIMARY KEY (`InternalCode`),
   KEY `ExamCode` (`ExamCode`,`ORG`),
   KEY `Rotation` (`ExamCode`,`Notes`,`Section`,`Type`,`ORG`)
