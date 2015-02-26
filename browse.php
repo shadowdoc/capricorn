@@ -102,7 +102,11 @@ $current = array();
 $prev = array();
 $future = array();
 $calls = array();
-
+$r1 =array();//PGY2 R1 rotation array 
+$r2 =array();//PGY3 R2 rotation array 
+$r3 =array();//PGY4 R3 rotation array
+$r4 =array();//PGY5 R4 rotation array
+$uStartDate = getLoginUserStartDate(); 
 
 foreach ($rotations as $r) {
 
@@ -112,13 +116,37 @@ foreach ($rotations as $r) {
     $endD->add(new DateInterval("P1D"));
     
     if (isCallRotation($r['Rotation'])) $calls[] = $r;
-    else if ($today > $endD) $prev[] = $r;
+    else if ($today > $endD) {
+        //categorize by PGY
+         $timeMonths = $startD->diff(date_create($uStartDate))->format('%m') + $startD->diff(date_create($uStartDate))->format('%y')*12;
+            if ($timeMonths <= 11) {
+            $r1[]= $r;
+                }
+                else if ($timeMonths <= 23){
+                    $r2[]= $r;
+                    }
+                    else if ($timeMonths <= 35){
+                        $r3[]= $r;
+                        }
+                        else if ($timeMonths <= 47){
+                            $r4[]= $r;
+                            }
+    }
     else if ($today < $startD) $future[] = $r;
     else $current[] = $r;
 }
 ?>
 <div  data-intro="Click on a rotation to display its data." data-position="bottom">
 <?php
+echo "<h3>Display by Date<img src='images/new.png' width =55px alt=''/></h3>";
+tableStartSection("Date Ranges",0);
+echo '  <a href="#" onclick="clickInterval(-31)">1 month</a><br>
+        <a href="#" onclick="clickInterval(-183)">6 months</a><br>
+        <a href="#" onclick="clickInterval(-365)" title="This may take a couple minutes to process.">1 year</a><br>
+        <a href="#" onclick="clickInterval(-1431)" title="This will take a few minutes to process.">4 years</a><br>
+        <a href="#" onclick="clickInterval(-31)">Custom Range</a><br>';
+tableEndSection();
+echo '<h3>Data by Rotation</h3>';
 tableStartSection("Current Rotation", 0);
 foreach ($current as $r) {
     $r['RotationStartDate'] = str_replace("-", "/", $r['RotationStartDate']);
@@ -129,13 +157,43 @@ tableEndSection();
 ?>
 </div>
 <?php
-tableStartSection("Previous 2013-2014", 0);
-foreach ($prev as $r) {
-    $r['RotationStartDate'] = str_replace("-", "/", $r['RotationStartDate']);
-    $r['RotationEndDate'] = str_replace("-", "/", $r['RotationEndDate']);
-    displayRotationButton($r['Rotation'], $r['RotationStartDate'], $r['RotationEndDate']);
+//display rotations in collapsed PGY menus
+if (count($r1)){
+    tableStartSection("R1", 0,1);
+    foreach ($r1 as $r) {
+        $r['RotationStartDate'] = str_replace("-", "/", $r['RotationStartDate']);
+        $r['RotationEndDate'] = str_replace("-", "/", $r['RotationEndDate']);
+        displayRotationButton($r['Rotation'], $r['RotationStartDate'], $r['RotationEndDate']);
+    }
+    tableEndSection();
+    if (count($r2)){ //hide if R1 resident
+        tableStartSection("R2", 0,1);
+        foreach ($r2 as $r) {
+            $r['RotationStartDate'] = str_replace("-", "/", $r['RotationStartDate']);
+            $r['RotationEndDate'] = str_replace("-", "/", $r['RotationEndDate']);
+            displayRotationButton($r['Rotation'], $r['RotationStartDate'], $r['RotationEndDate']);
+        }  
+        tableEndSection();
+        if (count($r3)){
+            tableStartSection("R3", 0,1);
+            foreach ($r3 as $r) {
+                $r['RotationStartDate'] = str_replace("-", "/", $r['RotationStartDate']);
+                $r['RotationEndDate'] = str_replace("-", "/", $r['RotationEndDate']);
+                displayRotationButton($r['Rotation'], $r['RotationStartDate'], $r['RotationEndDate']);
+            }  
+            tableEndSection();
+            if (count($r4)){
+                tableStartSection("R4", 0,1);
+                foreach ($r4 as $r) {
+                    $r['RotationStartDate'] = str_replace("-", "/", $r['RotationStartDate']);
+                    $r['RotationEndDate'] = str_replace("-", "/", $r['RotationEndDate']);
+                    displayRotationButton($r['Rotation'], $r['RotationStartDate'], $r['RotationEndDate']);
+                }  
+                tableEndSection();
+            }
+        }
+    }
 }
-tableEndSection();
 
 tableStartSection("Future", 0);
 foreach ($future as $r) {
@@ -148,15 +206,17 @@ tableEndSection();
 <?php
 if (isset($_GET['rota'])) {
     $r = $_GET['rota'];
-    echo "<table border=0 width=100%><tr><td bgcolor=$schemaColor[0]><center><font size=+1 color=white>$r</font></center></tr></table><br>";
+    echo "<table border=0 width=100%><tr><td bgcolor=$schemaColor[0]><center><font size=+1 color=white>$r</font></center></tr></table>"; 
 }
 ?>
 <div class='control' data-intro="Control Panel to select date range and display style." data-position="right">
 <form id="range">
+<?php if(isset($_GET['rota'])) echo "<span id='dateOptions' style='display:none'>" /* hide date selector if rotation has been selected as the rotation already has a begin and end date.*/ ?>
 <label for="from" >From</label>
 <input style="border:solid 1px;background:none" type="text" size=10 id="from" name="from" />
 <label for="to">to</label>
 <input style="border:solid 1px;background:none" type="text" size=10 id="to" name="to"/> 
+</span>
 <label><input type="checkbox" title="Total studies interpreted versus daily counts." onClick="$('#range').submit();" id="cumulative" name="cumulative" value="Y" <?php echo $cumulative?"checked":""?>>Cumulative</label>
 <input type="submit" id="sub" value="Go" /><br>
 <label>Modality:
@@ -184,11 +244,6 @@ foreach ($examType as $type) {
 
 </select></label>
 </form>
-Past: [ <a href="#" onclick="clickInterval(-31)">1 month</a> | 
-<a href="#" onclick="clickInterval(-183)">6 months</a> | 
-<a href="#" onclick="clickInterval(-365)" title="May take up to 1 minute to process. Speed things up by selecting a specific modality.">1 year</a> |
-<a href="#" onclick="clickInterval(-1431)" title="May take up to 5 minutes to process.  Speed things up by selecting a specific modality.">4 years</a> ]
-
 </div>
 <p>
 

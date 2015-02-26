@@ -544,15 +544,21 @@ function getExamCodeData($info = 'Section, Type', $array=NULL, $suffix) {
  **************************************/
 
 /**** Collapsable Table Function ****/
-function tableStartSection($id, $border=0) {
+function tableStartSection($id, $border=0, $collapsed=0) {
     global $schemaColor;
     /* $array = [date start, date end, volume] */
     $title = codeToEnglish($id);
     $id = str_replace(' ', '_', $id);
+    $display='';
+    $icon='-';
+    if ($collapsed) {
+        $display = ' style="display: none;"';
+        $icon='+';
+    }
     echo <<< END
-		<div class="graphheader"><input id="lnk$id" type="button" value="[-]" class="togglebutton" onclick=toggle_visibility("tbl$id","lnk$id")>
+		<div class="graphheader"><input id="lnk$id" type="button" value="[$icon]" class="togglebutton" onclick=toggle_visibility("tbl$id","lnk$id")>
         $title</div>
-		<div id="tbl$id">
+		<div id="tbl$id" $display>
 END;
 }
 //         <table width="100%" border="$border" bordercolor="lightgray" bordercolordark="lightgray" cellpadding="4" cellspacing="0" id="tbl$id" style="display:table">
