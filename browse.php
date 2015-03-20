@@ -218,7 +218,7 @@ if (isset($_GET['rota'])) {
 <input style="border:solid 1px;background:none" type="text" size=10 id="to" name="to"/> 
 </span>
 <label><input type="checkbox" title="Total studies interpreted versus daily counts." onClick="$('#range').submit();" id="cumulative" name="cumulative" value="Y" <?php echo $cumulative?"checked":""?>>Cumulative</label>
-<label><input type="checkbox" title="Values in RVUs." onClick="$('#range').submit();" id="RVUVals" name="RVUVals" value="Y" <?php echo $RVUVals?"checked":""?>>Display as RVUs<img src='images/new.png' width =55px alt=''/></label>
+<label><input type="checkbox" title="Values in RVUs." onClick="$('#range').submit();" id="RVUVals" name="RVUVals" value="Y" <?php echo $RVUVals?"checked":""?>>Display as RVUs</label>
 <input type="submit" id="sub" value="Go" /><br>
 <label>Modality:
 <select style="background:none" name='mod' id='mod'>
@@ -249,6 +249,9 @@ foreach ($examType as $type) {
 <p>
 
 <?php 
+if ($RVUVals) {
+    echo "Please note: These RVU values are <strong>ESTIMATES</strong> only.<br> <span style='font-size:xx-small;'> Due to bundling and ongoing changes in reimbursement these values may vary from actual reimbursement amounts. We made our best efforts to generate accurate estimates and believe this will help improve resident understanding of RVU values. RVU values are incomplete for IR procedures.</span><br>";
+    }
 if (isset($_GET['mod']) && $_GET['mod'] != '')  {
     include "disp_single_modality.php";
 } else {
