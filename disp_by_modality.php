@@ -41,7 +41,7 @@ foreach ($smn as $codeData) {
         $arrangement[] = $codeData[1];
         $dispArray[$codeData[1]][$codeData[0]] = $array;
         if($RVU_unknown>0){
-            echo "<br>There are <strong>".$RVU_unknown." </strong>studies without set RVU values that would be included in these graphs.";
+            echo "<br>There are <strong>".$RVU_unknown." " . $codeData[0] . " " . $codeData[1] ." </strong> studies without set RVU values that would be included in these graphs.";
         }
     }
 }
