@@ -72,6 +72,8 @@ $ed = date_create('NOW');
 $sd = clone $ed; 
 $sd->sub(new DateInterval('P31D')); // end date - decided here.  The javascript just reflects the decisions done here.
 $cumulative = False;
+$RVUVals=False;  //default view is by count. True when RVU selected
+$RVU_unknown =0; // number of studies without set RVU value
 
 
 if (isset($_SESSION)) {
@@ -87,6 +89,7 @@ if (isset($_GET['from']) && isset($_GET['to'])) {
     $ed = $_GET['to'];     // End Date for highchart stuff.  Must use this variable.
 }
 if (isset($_GET['cumulative'])) $cumulative = $_GET['cumulative']=='Y' ? True : False;
+if (isset($_GET['RVUVals'])) $RVUVals = $_GET['RVUVals']=='Y' ? True : False;
 
 $dayIntCalc = date_create($ed);
 $dayIntCalc = $dayIntCalc->diff(date_create($sd));
@@ -205,6 +208,8 @@ function getCumulativeCountArray($section, $type, $note, $startDate, $endDate, $
 
 function getCountArray ($section, $type, $note, $startDate, $endDate, $interval='P1D') {
     global $resdbConn;
+    global $RVUVals;
+    global $RVU_unknown;
     
     if ($section == 'MISC') return;
 
@@ -215,7 +220,11 @@ function getCountArray ($section, $type, $note, $startDate, $endDate, $interval=
     $interval = new DateInterval($interval);
 
     $returnArray = array();
+    if($RVUVals) {
+    $sql = "SELECT em.InternalID,em.CompletedDTTM, ecd.TOTAL_RVU FROM ExamMeta as em INNER JOIN ExamCodeDefinition as ecd on em.ExamCode=ecd.ExamCode AND em.Organization=ecd.ORG WHERE TraineeID=" . $_SESSION['traineeid'] . " AND ecd.Type='$type' AND ecd.Section='$section'";    
+    }else {
     $sql = "SELECT em.InternalID,em.CompletedDTTM FROM ExamMeta as em INNER JOIN ExamCodeDefinition as ecd on em.ExamCode=ecd.ExamCode AND em.Organization=ecd.ORG WHERE TraineeID=" . $_SESSION['traineeid'] . " AND ecd.Type='$type' AND ecd.Section='$section'";
+    }
     if ($note != "") {
         $sql = $sql . " AND ecd.Notes LIKE '$note'";
     }
@@ -233,7 +242,16 @@ function getCountArray ($section, $type, $note, $startDate, $endDate, $interval=
             $returnArray[sizeof($returnArray)] = 0;
             $startDate->add($interval);
         }
-        $returnArray[sizeof($returnArray)-1]++;
+        if($RVUVals) {
+            if($r['TOTAL_RVU']==-1){ //RVU value not set
+                $RVU_unknown++;
+                
+            }else{
+                $returnArray[sizeof($returnArray)-1]= $returnArray[sizeof($returnArray)-1]+$r['TOTAL_RVU'] ;
+            }
+        }else {
+            $returnArray[sizeof($returnArray)-1]++;
+        }
     }
     
     while ($endDate > $startDate) {
@@ -544,15 +562,21 @@ function getExamCodeData($info = 'Section, Type', $array=NULL, $suffix) {
  **************************************/
 
 /**** Collapsable Table Function ****/
-function tableStartSection($id, $border=0) {
+function tableStartSection($id, $border=0, $collapsed=0) {
     global $schemaColor;
     /* $array = [date start, date end, volume] */
     $title = codeToEnglish($id);
     $id = str_replace(' ', '_', $id);
+    $display='';
+    $icon='-';
+    if ($collapsed) {
+        $display = ' style="display: none;"';
+        $icon='+';
+    }
     echo <<< END
-		<div class="graphheader"><input id="lnk$id" type="button" value="[-]" class="togglebutton" onclick=toggle_visibility("tbl$id","lnk$id")>
+		<div class="graphheader"><input id="lnk$id" type="button" value="[$icon]" class="togglebutton" onclick=toggle_visibility("tbl$id","lnk$id")>
         $title</div>
-		<div id="tbl$id">
+		<div id="tbl$id" $display>
 END;
 }
 //         <table width="100%" border="$border" bordercolor="lightgray" bordercolordark="lightgray" cellpadding="4" cellspacing="0" id="tbl$id" style="display:table">
@@ -671,8 +695,16 @@ END;
 
 }
 function assembleGraph($graphName, $type, $makegrapharray) {
+    Global $RVUVals;
     $graphSeries = makeGraph($makegrapharray, $type);
     $title = codeToEnglish($graphName);
+    if ($RVUVals) { 
+        $unitString = ' RVUs'; //change Y axis label if RVU selected
+        $clickString=' + "&RVUVals=Y"';
+        } else {
+        $unitString = ' Studies' ; 
+        $clickString='';
+        }
     echo <<< END
     <script>
     <!--
@@ -700,7 +732,7 @@ function assembleGraph($graphName, $type, $makegrapharray) {
             yAxis: {
                 min: 0,
                 title: {
-                    text: 'Interpreted'
+                    text: '$unitString'
                 },
                 plotLines: [{
 
@@ -710,7 +742,7 @@ function assembleGraph($graphName, $type, $makegrapharray) {
                 }]
             },
             tooltip: {
-                valueSuffix: ' studies',
+                valueSuffix: ' $unitString',
                 footerFormat: 'Click on bar graph for details.'
             },
             legend: {
@@ -744,7 +776,7 @@ function assembleGraph($graphName, $type, $makegrapharray) {
                                 var tos_dlg = $('<div></div>')
                                     .dialog({
                                         autoOpen: true,
-                                        title: 'Studies',
+                                        title: '$unitString',
                                         width: 1000,
                                         height: 600,
                                         modal: true,
@@ -756,7 +788,7 @@ function assembleGraph($graphName, $type, $makegrapharray) {
                                     section = 'NM';
                                 }
 
-                                tos_dlg.load('showstudy.php?from='+ dateStr + "&day=" + (pointInt/86400000) + "&sec=" + encodeURIComponent(section) + "&typ=" + encodeURIComponent(type) + "&notes=" + notes);
+                                tos_dlg.load('showstudy.php?from='+ dateStr + "&day=" + (pointInt/86400000) + "&sec=" + encodeURIComponent(section) + "&typ=" + encodeURIComponent(type) + "&notes=" + notes $clickString);
                                 //alert ('URL: showstudy.php?from='+ dateStr + "&day=" + (pointInt/86400000) + "&sec=" + section + "&typ=" + type + "&notes=" + notes);
                             }
                         }
@@ -774,11 +806,17 @@ END;
 
 function getTraineeStudiesByDate($startDate, $endDate, $section, $type, $notes)  {
     global $resdbConn;
+    global $RVUVals;
     // The dates are in plain text format.
 
-	$sqlquery = "SELECT em.AccessionNumber, em.LastName, em.FirstName, ecd.Description, ecd.ExamCode, aid.LastName, CompletedDTTM FROM `ExamMeta` as em INNER JOIN `ExamCodeDefinition` as ecd ON (em.ExamCode = ecd.ExamCode AND ecd.ORG = em.Organization) INNER JOIN `AttendingIDDefinition` as aid ON (em.AttendingID = aid.AttendingID) WHERE`CompletedDTTM` >= '$startDate' AND `CompletedDTTM` < '$endDate' AND TraineeID=" . $_SESSION['traineeid'] . " AND ecd.Type='$type' AND ecd.Section='$section'";
+ if ($RVUVals) {        
+        $sqlquery = "SELECT em.AccessionNumber, em.LastName, em.FirstName, ecd.Description, ecd.ExamCode, aid.LastName, CompletedDTTM, ecd.TOTAL_RVU FROM `ExamMeta` as em INNER JOIN `ExamCodeDefinition` as ecd ON (em.ExamCode = ecd.ExamCode AND ecd.ORG = em.Organization) INNER JOIN `AttendingIDDefinition` as aid ON (em.AttendingID = aid.AttendingID) WHERE`CompletedDTTM` >= '$startDate' AND `CompletedDTTM` < '$endDate' AND TraineeID=" . $_SESSION['traineeid'] . " AND ecd.Type='$type' AND ecd.Section='$section'";
+       
+    } else {	
+    $sqlquery = "SELECT em.AccessionNumber, em.LastName, em.FirstName, ecd.Description, ecd.ExamCode, aid.LastName, CompletedDTTM FROM `ExamMeta` as em INNER JOIN `ExamCodeDefinition` as ecd ON (em.ExamCode = ecd.ExamCode AND ecd.ORG = em.Organization) INNER JOIN `AttendingIDDefinition` as aid ON (em.AttendingID = aid.AttendingID) WHERE`CompletedDTTM` >= '$startDate' AND `CompletedDTTM` < '$endDate' AND TraineeID=" . $_SESSION['traineeid'] . " AND ecd.Type='$type' AND ecd.Section='$section'";
+    }
     if ($notes != "") {
-        $sql = $sql . " AND ecd.Notes LIKE '$notes'";
+        $sqlquery = $sqlquery . " AND ecd.Notes LIKE '$notes'";
     }
 
     $results = $resdbConn->query($sqlquery) or die (mysqli_error($resdbConn));
@@ -788,7 +826,12 @@ function getTraineeStudiesByDate($startDate, $endDate, $section, $type, $notes) 
 }
 
 function getResultsTabDelimited($results)  {
-    $output = "Accession\tLast Name\tFirstName\tDescription\tExam Code\tAttending\tCompletion Time\n";
+    global $RVUVals;
+    if ($RVUVals) {
+        $output = "Accession\tLast Name\tFirstName\tDescription\tExam Code\tAttending\tCompletion Time\tEst RVU\n";
+    } else {
+        $output = "Accession\tLast Name\tFirstName\tDescription\tExam Code\tAttending\tCompletion Time\n";
+    }
     while ($row = $results->fetch_array(MYSQL_NUM))  {
         foreach($row as $col) {
             if (is_a($col, "DateTime")){
@@ -804,15 +847,27 @@ function getResultsTabDelimited($results)  {
 }
 
 function getResultsHTML($results)  {
+    global $RVUVals;
     $output = "<table class='results'>\n";
     // Header
+    if ($RVUVals ){
     $output .= "<tr><td><strong>Accession</strong>
         <td><strong>Last Name</strong>
         <td><strong>First Name</strong>
         <td><strong>Description</strong>
         <td><strong>Exam Code</strong>
         <td><strong>Attending</strong>
-        <td><strong>Completion Time</strong></tr>";
+        <td><strong>Completion Time</strong>
+        <td><strong>Est. RVU</strong></tr>"; }
+            else {
+                $output .= "<tr><td><strong>Accession</strong>
+        <td><strong>Last Name</strong>
+        <td><strong>First Name</strong>
+        <td><strong>Description</strong>
+        <td><strong>Exam Code</strong>
+        <td><strong>Attending</strong>
+        <td><strong>Completion Time </strong></tr>";
+            }
         
     while ($row = $results->fetch_array(MYSQL_NUM))  {
         $output .= "<tr>";

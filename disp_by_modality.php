@@ -22,8 +22,8 @@ $dispArray = array();       // Holds all the series information, keyed by Type (
 $arrangement = array();    // contains all the Table Titles (modality) 
 
 $smn = getExamCodeData('Section, Type', NULL, "ORDER BY TYPE");
-
 foreach ($smn as $codeData) {
+    $RVU_unknown=0; //reset counter for unset RVU values
     $array = array();
     if ($cumulative) {
         $array = getCumulativeCountArray($codeData[0], $codeData[1], "", $sd, $ed, $intvl);
@@ -40,6 +40,9 @@ foreach ($smn as $codeData) {
     else {
         $arrangement[] = $codeData[1];
         $dispArray[$codeData[1]][$codeData[0]] = $array;
+        if($RVU_unknown>0){
+            echo "<br>There are <strong>".$RVU_unknown." " . $codeData[0] . " " . $codeData[1] ." </strong> studies without set RVU values that would be included in these graphs.";
+        }
     }
 }
 
