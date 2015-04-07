@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `ExamMeta` (
   `TraineeID` int(11) DEFAULT NULL,
   `AttendingID` int(11) DEFAULT NULL,
   `OrganizationID` int(11) DEFAULT NULL,
-  `Organization` varchar(8) NOT NULL,
+  `Organization` varchar(50) NOT NULL,
   `CompletedDTTM` datetime DEFAULT NULL,
   `InquiryDTTM` datetime DEFAULT NULL,
   `DraftDTTM` datetime DEFAULT NULL,
