@@ -21,7 +21,7 @@ INSERT INTO `AttendingIDDefinition` VALUES (1,'Stein','Ben');
 UNLOCK TABLES;
 
 CREATE TABLE IF NOT EXISTS `ExamCodeDefinition` (
-  `InternalCode` varchar(18) NOT NULL DEFAULT '',
+  `InternalCode` MEDIUMINT AUTO_INCREMENT,
   `ORG` varchar(7) DEFAULT NULL,
   `ExamCode` varchar(10) DEFAULT NULL,
   `Description` varchar(73) DEFAULT NULL,
